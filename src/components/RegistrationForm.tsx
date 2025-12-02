@@ -67,12 +67,38 @@ export const RegistrationForm = () => {
 
     setIsSubmitting(true);
 
-    // Simulate API call - In production, this would save to your backend
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Get Google Apps Script URL from environment variable
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
       
-      // Here you would typically make an API call to save the data
-      console.log("Form submitted:", formData);
+      if (!scriptUrl) {
+        throw new Error("Google Script URL לא מוגדר");
+      }
+
+      // Prepare data with timestamp
+      const submissionData = {
+        parentName: formData.parentName,
+        email: formData.email,
+        phone: formData.phone,
+        childName: formData.childName || "",
+        preferredContact: formData.preferredContact,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Send data to Google Apps Script
+      const response = await fetch(scriptUrl, {
+        method: "POST",
+        mode: "no-cors", // Required for Google Apps Script
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submissionData),
+      });
+
+      // Note: no-cors mode doesn't allow reading response, so we assume success
+      // The script will handle the data and return success
+      
+      console.log("Form submitted to Google Sheets:", submissionData);
       
       toast({
         title: "ההרשמה הושלמה בהצלחה!",
@@ -83,6 +109,7 @@ export const RegistrationForm = () => {
         navigate("/thank-you");
       }, 1000);
     } catch (error) {
+      console.error("Error submitting form:", error);
       toast({
         title: "שגיאה",
         description: "משהו השתבש. אנא נסה שוב.",

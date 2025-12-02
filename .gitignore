@@ -7,18 +7,82 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+build
 *.local
+
+# Environment variables - כל קבצי הסביבה (רגיש!)
+.env
+.env.*
+!.env.example
+.env.local
+.env.development
+.env.production
+.env.test
+.env.staging
+
+# Cache directories
+.cache
+.vite
+.parcel-cache
+.npm
+.eslintcache
+.stylelintcache
+node_modules/.cache
+
+# Lock files (אופציונלי - אבל מומלץ לא להעלות)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
+*.swp
+*.swo
+*~
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary files
+*.tmp
+*.temp
+.temp
+tmp/
+temp/
+
+# Supabase local files (אם יש)
+.supabase/
+
+# Testing
+coverage
+.nyc_output
+*.lcov
+
+# Misc
+*.pem
+*.key
+*.cert
+*.crt
+secrets.json
+config.local.json
