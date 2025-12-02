@@ -34,6 +34,13 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          echo "Checking dist/index.html..."
+          cat dist/index.html | grep -o '/watch-my-kid-sign-up/assets/[^"]*' || echo "Base path not found in index.html!"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -53,4 +60,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
