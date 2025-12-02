@@ -1,6 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
+import logo from "@/assets/logo.png";
 
 const ThankYou = () => {
   useEffect(() => {
@@ -14,10 +13,14 @@ const ThankYou = () => {
       
       <div className="container mx-auto px-4 py-12 md:py-20">
         <div className="max-w-2xl mx-auto text-center">
-          {/* Success Icon */}
+          {/* Logo */}
           <div className="animate-scale-in mb-8">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full gradient-hero mb-6">
-              <CheckCircle2 className="w-12 h-12 text-white" />
+            <div className="flex justify-center mb-6">
+              <img 
+                src={logo} 
+                alt="Watch My Kid Logo" 
+                className="h-32 md:h-40 lg:h-48 w-auto object-contain"
+              />
             </div>
           </div>
 
@@ -33,21 +36,8 @@ const ThankYou = () => {
               </h2>
               
               <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                הפרטים שלך הועברו בהצלחה למערכת שלנו. כעת, לחץ על הכפתור למטה כדי לעבור לאפליקציה הרשמית של "Watch My Kid" ולהתחיל בתהליך ההתקנה והאימות.
+                הפרטים שלך הועברו בהצלחה למערכת שלנו. אנחנו נעבור על הכל והמשך נשלח לך פרטים נוספים במייל על ביצוע ההתחברות וההליך.
               </p>
-
-              <Button 
-                size="lg" 
-                variant="hero"
-                className="w-full md:w-auto text-lg px-8 py-6 h-auto"
-                onClick={() => {
-                  // Replace with actual app URL
-                  window.open('https://watchmykid.app', '_blank');
-                }}
-              >
-                <span>מעבר לאפליקציה הרשמית</span>
-                <ExternalLink className="w-5 h-5" />
-              </Button>
             </div>
 
             {/* Additional Info */}
@@ -58,26 +48,17 @@ const ThankYou = () => {
               <ul className="text-right space-y-3 text-muted-foreground">
                 <li className="flex items-start gap-3">
                   <span className="text-primary font-bold text-xl">1</span>
-                  <span>הורדת האפליקציה הרשמית במכשיר הילד</span>
+                  <span>לאחר אימות הפרטים ישלחו פרטים נוספים במייל</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-primary font-bold text-xl">2</span>
-                  <span>הגדרת הרשאות הנחוצות לסריקת WhatsApp</span>
+                  <span>בגדול סורקים QR מהוואצפ של הילד ומחכים לאישור האימות</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-primary font-bold text-xl">3</span>
-                  <span>קבלת התראות על פעילות חשודה בזמן אמת</span>
+                  <span>מעתה ואליך תקבל ניטור על הודעות פוגעניות או דברים מאיימים שנשלחו אל הילד שלכם באופן מיידי</span>
                 </li>
               </ul>
-            </div>
-
-            <div className="mt-6">
-              <a 
-                href="/" 
-                className="text-primary hover:text-primary-light transition-colors underline-offset-4 hover:underline"
-              >
-                חזרה לדף הבית
-              </a>
             </div>
           </div>
         </div>

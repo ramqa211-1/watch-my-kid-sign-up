@@ -1,15 +1,31 @@
+import { useState } from "react";
 import { RegistrationForm } from "@/components/RegistrationForm";
 import { PrivacyNotice } from "@/components/PrivacyNotice";
+import { TermsOfService } from "@/components/TermsOfService";
+import { PrivacyPolicy } from "@/components/PrivacyPolicy";
 import { Shield, Eye, Bell, Lock } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
+import logo from "@/assets/logo.png";
 
 const Index = () => {
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Background gradient */}
       <div className="fixed inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 -z-10" />
       
       <div className="container mx-auto px-4 py-8 md:py-12">
+        {/* Logo Header */}
+        <div className="max-w-6xl mx-auto mb-12 md:mb-16 text-center">
+          <img 
+            src={logo} 
+            alt="Watch My Kid Logo" 
+            className="h-32 md:h-40 lg:h-48 w-auto mx-auto object-contain"
+          />
+        </div>
+
         {/* Hero Section */}
         <div className="max-w-6xl mx-auto mb-12 md:mb-16">
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
@@ -22,9 +38,6 @@ const Index = () => {
               
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                 רישום לשירות
-                <span className="block gradient-hero bg-clip-text text-transparent mt-2">
-                  Watch My Kid
-                </span>
               </h1>
               
               <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
@@ -114,17 +127,29 @@ const Index = () => {
           <div className="text-center text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '0.6s' }}>
             <p>
               בשליחת הטופס אתה מסכים ל
-              <a href="#" className="text-primary hover:text-primary-light underline mx-1">
+              <button
+                type="button"
+                onClick={() => setTermsOpen(true)}
+                className="text-primary hover:text-primary-light underline mx-1 cursor-pointer"
+              >
                 תנאי השימוש
-              </a>
+              </button>
               ול
-              <a href="#" className="text-primary hover:text-primary-light underline mx-1">
+              <button
+                type="button"
+                onClick={() => setPrivacyOpen(true)}
+                className="text-primary hover:text-primary-light underline mx-1 cursor-pointer"
+              >
                 מדיניות הפרטיות
-              </a>
+              </button>
             </p>
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <TermsOfService open={termsOpen} onOpenChange={setTermsOpen} />
+      <PrivacyPolicy open={privacyOpen} onOpenChange={setPrivacyOpen} />
     </div>
   );
 };
