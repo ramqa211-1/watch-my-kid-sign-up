@@ -32,15 +32,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify environment variable
+        run: |
+          if [ -z "${{ secrets.VITE_GOOGLE_SCRIPT_URL }}" ]; then
+            echo "❌ ERROR: VITE_GOOGLE_SCRIPT_URL secret is not set!"
+            exit 1
+          else
+            echo "✅ VITE_GOOGLE_SCRIPT_URL is set (length: ${#VITE_GOOGLE_SCRIPT_URL})"
+            echo "First 50 chars: ${VITE_GOOGLE_SCRIPT_URL:0:50}..."
+          fi
+
       - name: Build
         run: npm run build
         env:
           NODE_ENV: production
+          VITE_GOOGLE_SCRIPT_URL: ${{ secrets.VITE_GOOGLE_SCRIPT_URL }}
 
       - name: Verify build output
         run: |
           echo "Checking dist/index.html..."
           cat dist/index.html | grep -o '/watch-my-kid-sign-up/assets/[^"]*' || echo "Base path not found in index.html!"
+          echo "Checking if VITE_GOOGLE_SCRIPT_URL is in built files..."
+          grep -r "VITE_GOOGLE_SCRIPT_URL" dist/ || echo "⚠️ VITE_GOOGLE_SCRIPT_URL not found in dist (this is expected - it should be replaced with actual value)"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

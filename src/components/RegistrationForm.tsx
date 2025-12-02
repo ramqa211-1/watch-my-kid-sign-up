@@ -71,7 +71,18 @@ export const RegistrationForm = () => {
       // Get Google Apps Script URL from environment variable
       const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
       
+      // Debug: log environment info (only in development)
+      if (import.meta.env.DEV) {
+        console.log("Environment check:", {
+          hasScriptUrl: !!scriptUrl,
+          scriptUrlLength: scriptUrl?.length || 0,
+          allEnvVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_'))
+        });
+      }
+      
       if (!scriptUrl) {
+        console.error("VITE_GOOGLE_SCRIPT_URL is not defined. Available env vars:", 
+          Object.keys(import.meta.env).filter(k => k.startsWith('VITE_')));
         throw new Error("Google Script URL לא מוגדר");
       }
 
