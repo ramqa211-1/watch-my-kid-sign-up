@@ -1,4 +1,7 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const ThankYou = () => {
@@ -59,6 +62,16 @@ const ThankYou = () => {
                   <span>מעתה ואליך תקבל ניטור על הודעות פוגעניות או דברים מאיימים שנשלחו אל הילד שלכם באופן מיידי</span>
                 </li>
               </ul>
+            </div>
+
+            {/* Instructions Link */}
+            <div className="mt-8">
+              <Link to="/instructions">
+                <Button variant="hero" size="lg" className="w-full md:w-auto text-lg px-8 py-6 h-auto">
+                  <span>למדריך ההתקנה המפורט</span>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
