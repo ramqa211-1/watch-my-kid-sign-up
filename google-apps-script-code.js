@@ -10,6 +10,160 @@ function doGet(e) {
     // קבלת פרמטר המייל מה-URL
     const email = e.parameter.email;
     
+    let result;
+    
+    if (!email) {
+      result = {
+        success: false,
+        error: 'Email parameter is required'
+      };
+    } else {
+      // חיפוש המייל בגיליון "users"
+      const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = spreadsheet.getSheetByName('users');
+      
+      if (!sheet) {
+        // אם הגיליון לא קיים, המשתמש לא נרשם
+        result = {
+          success: true,
+          exists: false,
+          message: 'User not registered'
+        };
+      } else {
+        // חיפוש המייל בעמודה השנייה (אימייל)
+        const data = sheet.getDataRange().getValues();
+        const emailColumnIndex = 1; // עמודה B (אינדקס 1)
+        
+        let found = false;
+        // דילוג על שורת הכותרות (שורה 0)
+        for (let i = 1; i < data.length; i++) {
+          const rowEmail = data[i][emailColumnIndex];
+          if (rowEmail && rowEmail.toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+            // מייל נמצא - המשתמש נרשם
+            found = true;
+            break;
+          }
+        }
+        
+        if (found) {
+          result = {
+            success: true,
+            exists: true,
+            message: 'User is registered'
+          };
+        } else {
+          // מייל לא נמצא
+          result = {
+            success: true,
+            exists: false,
+            message: 'User not registered'
+          };
+        }
+      }
+    }
+    
+    // החזרת תשובה עם CORS headers
+    return ContentService
+      .createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        success: false,
+        error: error.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doPost(e) {
+  try {
+    // קבלת הנתונים מהטופס
+    const data = JSON.parse(e.postData.contents);
+    
+    // בדיקה איזה סוג טופס זה
+    const formType = data.type || 'registration'; // ברירת מחדל: טופס הרשמה
+    
+    if (formType === 'checkEmail') {
+      // בדיקת מייל - החזרת תשובה מיידית
+      return checkEmailInSheet(data.email);
+    } else if (formType === 'setup') {
+      // טופס הגדרה - נשלח לגיליון "installtion"
+      // בדיקה שהמייל נרשם בטופס הראשי
+      if (data.email) {
+        const emailExists = checkEmailExistsInSheet(data.email);
+        
+        if (!emailExists) {
+          // המייל לא נרשם - החזרת שגיאה
+          return ContentService
+            .createTextOutput(JSON.stringify({
+              success: false,
+              error: 'EMAIL_NOT_REGISTERED',
+              message: 'כתובת האימייל הזו לא נרשמה בטופס ההרשמה. אנא מלא קודם את טופס ההרשמה בעמוד הבית.'
+            }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+      
+      // אם המייל תקין, נמשיך לשליחה
+      handleSetupForm(data);
+      // החזרת תשובה מוצלחת
+      return ContentService
+        .createTextOutput(JSON.stringify({success: true}))
+        .setMimeType(ContentService.MimeType.JSON);
+    } else {
+      // טופס הרשמה - נשלח לגיליון "users"
+      handleRegistrationForm(data);
+      // החזרת תשובה מוצלחת
+      return ContentService
+        .createTextOutput(JSON.stringify({success: true}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+      
+  } catch (error) {
+    // במקרה של שגיאה
+    return ContentService
+      .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// פונקציה לבדיקת מייל בגיליון (מחזירה boolean)
+function checkEmailExistsInSheet(email) {
+  if (!email) {
+    return false;
+  }
+  
+  // חיפוש המייל בגיליון "users"
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName('users');
+  
+  if (!sheet) {
+    // אם הגיליון לא קיים, המשתמש לא נרשם
+    return false;
+  }
+  
+  // חיפוש המייל בעמודה השנייה (אימייל)
+  const data = sheet.getDataRange().getValues();
+  const emailColumnIndex = 1; // עמודה B (אינדקס 1)
+  
+  // דילוג על שורת הכותרות (שורה 0)
+  for (let i = 1; i < data.length; i++) {
+    const rowEmail = data[i][emailColumnIndex];
+    if (rowEmail && rowEmail.toString().toLowerCase().trim() === email.toLowerCase().trim()) {
+      // מייל נמצא - המשתמש נרשם
+      return true;
+    }
+  }
+  
+  // מייל לא נמצא
+  return false;
+}
+
+// פונקציה לבדיקת מייל בגיליון (מחזירה ContentService.TextOutput)
+function checkEmailInSheet(email) {
+  try {
     if (!email) {
       return ContentService
         .createTextOutput(JSON.stringify({
@@ -68,35 +222,6 @@ function doGet(e) {
         success: false,
         error: error.toString()
       }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doPost(e) {
-  try {
-    // קבלת הנתונים מהטופס
-    const data = JSON.parse(e.postData.contents);
-    
-    // בדיקה איזה סוג טופס זה
-    const formType = data.type || 'registration'; // ברירת מחדל: טופס הרשמה
-    
-    if (formType === 'setup') {
-      // טופס הגדרה - נשלח לגיליון "installtion"
-      handleSetupForm(data);
-    } else {
-      // טופס הרשמה - נשלח לגיליון "users"
-      handleRegistrationForm(data);
-    }
-    
-    // החזרת תשובה מוצלחת
-    return ContentService
-      .createTextOutput(JSON.stringify({success: true}))
-      .setMimeType(ContentService.MimeType.JSON);
-      
-  } catch (error) {
-    // במקרה של שגיאה
-    return ContentService
-      .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
