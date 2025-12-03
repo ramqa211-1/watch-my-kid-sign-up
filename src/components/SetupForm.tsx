@@ -54,6 +54,7 @@ export const SetupForm = () => {
   // ולכן לא נוכל לקרוא את התשובה. הבדיקה תתבצע רק בעת השליחה.
   const checkEmailExists = async (email: string): Promise<boolean> => {
     try {
+      // בדיקת מייל מתבצעת מול קובץ ה-users (לא installation)
       const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
       if (!scriptUrl) {
         throw new Error("Google Script URL לא מוגדר");
@@ -122,8 +123,8 @@ export const SetupForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Get Google Apps Script URL from environment variable
-      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_URL;
+      // Get Google Apps Script URL for installation form from environment variable
+      const scriptUrl = import.meta.env.VITE_GOOGLE_SCRIPT_INSTALLATION_URL || import.meta.env.VITE_GOOGLE_SCRIPT_URL;
       
       if (!scriptUrl) {
         throw new Error("Google Script URL לא מוגדר");
@@ -131,7 +132,6 @@ export const SetupForm = () => {
 
       // Prepare data with timestamp
       const submissionData = {
-        type: "setup", // להבדיל מהטופס הראשי
         email: formData.email,
         parentPhone: formData.parentPhone,
         notes: formData.notes || "",

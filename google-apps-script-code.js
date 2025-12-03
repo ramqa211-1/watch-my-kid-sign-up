@@ -1,5 +1,5 @@
-// Google Apps Script Code
-// העתק את הקוד הזה ל-Google Apps Script Editor
+// Google Apps Script Code - Registration Form Handler
+// העתק את הקוד הזה ל-Google Apps Script Editor של קובץ ה-users
 
 // כתובת המייל לקבלת התראות
 const NOTIFICATION_EMAIL = 'raiservices211@gmail.com';
@@ -82,47 +82,26 @@ function doPost(e) {
     // קבלת הנתונים מהטופס
     const data = JSON.parse(e.postData.contents);
     
-    // בדיקה איזה סוג טופס זה
-    const formType = data.type || 'registration'; // ברירת מחדל: טופס הרשמה
+    console.log('Registration form received:', data);
     
-    if (formType === 'checkEmail') {
+    // בדיקה אם זה בקשת בדיקת מייל
+    if (data.type === 'checkEmail') {
       // בדיקת מייל - החזרת תשובה מיידית
       return checkEmailInSheet(data.email);
-    } else if (formType === 'setup') {
-      // טופס הגדרה - נשלח לגיליון "installtion"
-      // בדיקה שהמייל נרשם בטופס הראשי
-      if (data.email) {
-        const emailExists = checkEmailExistsInSheet(data.email);
-        
-        if (!emailExists) {
-          // המייל לא נרשם - החזרת שגיאה
-          return ContentService
-            .createTextOutput(JSON.stringify({
-              success: false,
-              error: 'EMAIL_NOT_REGISTERED',
-              message: 'כתובת האימייל הזו לא נרשמה בטופס ההרשמה. אנא מלא קודם את טופס ההרשמה בעמוד הבית.'
-            }))
-            .setMimeType(ContentService.MimeType.JSON);
-        }
-      }
-      
-      // אם המייל תקין, נמשיך לשליחה
-      handleSetupForm(data);
-      // החזרת תשובה מוצלחת
-      return ContentService
-        .createTextOutput(JSON.stringify({success: true}))
-        .setMimeType(ContentService.MimeType.JSON);
-    } else {
-      // טופס הרשמה - נשלח לגיליון "users"
-      handleRegistrationForm(data);
-      // החזרת תשובה מוצלחת
-      return ContentService
-        .createTextOutput(JSON.stringify({success: true}))
-        .setMimeType(ContentService.MimeType.JSON);
     }
+    
+    // טופס הרשמה - נשלח לגיליון "users"
+    console.log('Processing registration form');
+    handleRegistrationForm(data);
+    
+    // החזרת תשובה מוצלחת
+    return ContentService
+      .createTextOutput(JSON.stringify({success: true}))
+      .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
     // במקרה של שגיאה
+    console.error('Error in doPost:', error);
     return ContentService
       .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
@@ -265,45 +244,6 @@ function handleRegistrationForm(data) {
   sendRegistrationEmailNotification(data);
 }
 
-// טיפול בטופס הגדרה
-function handleSetupForm(data) {
-  // קבלת הגיליון "installtion" (Setup)
-  // אם הגיליון לא קיים, ניצור אותו
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = spreadsheet.getSheetByName('installtion');
-  
-  if (!sheet) {
-    // אם הגיליון לא קיים, ניצור אותו
-    sheet = spreadsheet.insertSheet('installtion');
-    // הוספת כותרות
-    sheet.appendRow([
-      'אימייל',
-      'טלפון של הורה/מפקח',
-      'הערות',
-      'הצליח סריקה QR?'
-    ]);
-    // עיצוב הכותרות
-    const headerRange = sheet.getRange(1, 1, 1, 4);
-    headerRange.setFontWeight('bold');
-    headerRange.setBackground('#4CAF50');
-    headerRange.setFontColor('#FFFFFF');
-  }
-  
-  // המרת ערך boolean לעברית
-  const qrScanStatus = data.qrScanSuccessful ? 'כן' : 'לא';
-  
-  // הוספת שורה חדשה עם הנתונים
-  sheet.appendRow([
-    data.email || '', // הוספת המייל לטופס ההתקנה
-    data.parentPhone || '',
-    data.notes || '',
-    qrScanStatus
-  ]);
-  
-  // שליחת התראה במייל
-  sendSetupEmailNotification(data);
-}
-
 // שליחת התראה על טופס הרשמה
 function sendRegistrationEmailNotification(data) {
   try {
@@ -340,55 +280,4 @@ function sendRegistrationEmailNotification(data) {
   }
 }
 
-// שליחת התראה על טופס הגדרה
-function sendSetupEmailNotification(data) {
-  try {
-    const qrScanSuccessful = data.qrScanSuccessful === true;
-    const qrStatus = qrScanSuccessful ? 'כן' : 'לא';
-    
-    // בחירת נושא ומסר בהתאם לסטטוס ההתקנה
-    let subject, statusMessage;
-    
-    if (qrScanSuccessful) {
-      subject = '✅ התקנה הצליחה - Watch My Kid';
-      statusMessage = `
-🎉 מעולה! המשתמש דיווח שההתקנה הצליחה בהצלחה.
-
-המשתמש סרק את ה-QR Code וחיבר את ה-WhatsApp של הילד לאפליקציה.
-כל המערכות פעילות והניטור החל לפעול.
-      `.trim();
-    } else {
-      subject = '⚠️ דיווח על בעיה בהתקנה - Watch My Kid';
-      statusMessage = `
-⚠️ המשתמש דיווח שההתקנה לא הצליחה.
-
-יש צורך לבדוק את הבעיה ולהיענות למשתמש בהקדם.
-      `.trim();
-    }
-    
-    const body = `
-${statusMessage}
-
-פרטי המשתמש:
-- אימייל: ${data.email || 'לא צוין'}
-- טלפון של הורה/מפקח: ${data.parentPhone || 'לא צוין'}
-- הצליח סריקה QR: ${qrStatus}
-${data.notes ? `- הערות: ${data.notes}` : '- הערות: אין הערות'}
-
-תאריך ושעה: ${new Date(data.timestamp || new Date()).toLocaleString('he-IL')}
-
----
-שירות Watch My Kid
-    `.trim();
-    
-    MailApp.sendEmail({
-      to: NOTIFICATION_EMAIL,
-      subject: subject,
-      body: body
-    });
-  } catch (error) {
-    // אם יש שגיאה בשליחת המייל, לא נכשיל את כל התהליך
-    console.error('Error sending setup email notification:', error);
-  }
-}
 
