@@ -18,6 +18,9 @@
 2. מחליף את כל הקוד בקוד הבא:
 
 ```javascript
+// כתובת המייל לקבלת התראות
+const NOTIFICATION_EMAIL = 'raiservices211@gmail.com';
+
 function doPost(e) {
   try {
     // קבלת הנתונים מהטופס
@@ -36,6 +39,9 @@ function doPost(e) {
       new Date(data.timestamp || new Date())
     ]);
     
+    // שליחת התראה במייל
+    sendEmailNotification(data);
+    
     // החזרת תשובה מוצלחת
     return ContentService
       .createTextOutput(JSON.stringify({success: true}))
@@ -46,6 +52,41 @@ function doPost(e) {
     return ContentService
       .createTextOutput(JSON.stringify({success: false, error: error.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function sendEmailNotification(data) {
+  try {
+    const subject = 'התראה: רישום חדש ב-Watch My Kid';
+    const body = `
+היי,
+
+נרשם משתמש חדש בטופס ההרשמה:
+
+פרטי ההורה:
+- שם: ${data.parentName || 'לא צוין'}
+- אימייל: ${data.email || 'לא צוין'}
+- טלפון: ${data.phone || 'לא צוין'}
+
+פרטי הילד:
+- שם הילד: ${data.childName || 'לא צוין'}
+
+אמצעי קשר מועדף: ${data.preferredContact === 'email' ? 'דוא"ל' : 'טלפון'}
+
+תאריך ושעה: ${new Date(data.timestamp || new Date()).toLocaleString('he-IL')}
+
+---
+שירות Watch My Kid
+    `.trim();
+    
+    MailApp.sendEmail({
+      to: NOTIFICATION_EMAIL,
+      subject: subject,
+      body: body
+    });
+  } catch (error) {
+    // אם יש שגיאה בשליחת המייל, לא נכשיל את כל התהליך
+    console.error('Error sending email notification:', error);
   }
 }
 ```
@@ -63,7 +104,7 @@ function doPost(e) {
    - **Who has access**: בחר **Anyone** (חשוב!)
 5. לחץ על **Deploy**
 6. **העתק את ה-URL** שמופיע (נראה כמו: `https://script.google.com/macros/s/.../exec`)
-7. לחץ על **Authorize access** והרשא את הסקריפט לגשת ל-Google Sheets
+7. לחץ על **Authorize access** והרשא את הסקריפט לגשת ל-Google Sheets **וגם ל-Gmail** (לשליחת התראות במייל)
 
 ## שלב 4: הגדרת הפרויקט
 
@@ -79,6 +120,13 @@ function doPost(e) {
 1. מלא את הטופס באתר
 2. שלח את הטופס
 3. בדוק את הגיליון - הנתונים אמורים להופיע בשורה חדשה
+4. בדוק את תיבת הדואר הנכנס - אמור להגיע מייל התראה ל-raiservices211@gmail.com
+
+## התראות במייל
+
+הסקריפט שולח אוטומטית התראה במייל בכל פעם שמישהו נרשם בטופס. המייל נשלח ל-`raiservices211@gmail.com` וכולל את כל פרטי הרישום.
+
+**חשוב:** בעת ההרשאה, ודא שאתה מאשר גם גישה ל-Gmail לשליחת המיילים.
 
 ## פתרון בעיות
 
